@@ -80,13 +80,15 @@ namespace Console_delegate
 
             //выход после выполнения одной из задачи
             Task.WaitAny(task2, task);
-
+            task.Dispose();
             //выполнение каких-либо действий в методе Main(основной поток)
             for (int i = 0; i < 10; i++)
             {
                 //метод Thread. Sleep() использован для сохранения активным основного потока 
                 //до тех пор, пока не завершится выполнение метода MyTask() и метода MyTask2
                 //Thread.Sleep(1000);
+                task2.Wait();
+                
                 Console.WriteLine($"Код в основном потоке: {i}");
             }
             Console.WriteLine("Основной поток завершен");
