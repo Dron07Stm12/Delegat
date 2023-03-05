@@ -58,8 +58,8 @@ namespace Console_delegate
             //т.к. конструктор принемает делегат Action соответствующий сигнатуре метода MyTask
             Task task = new Task(Program.MyTask);
 
-            //Console.WriteLine("Идентификатор задачи task: " + task.Id);
-            //Console.WriteLine("Идентификатор задачи task2: " + task2.Id);
+            Console.WriteLine("Идентификатор задачи task: " + task.Id);
+            Console.WriteLine("Идентификатор задачи task2: " + task2.Id);
 
 
             //запускаем задачи
