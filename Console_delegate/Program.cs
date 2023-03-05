@@ -16,12 +16,12 @@ namespace Console_delegate
 
         public void MyTask2() {
             Console.WriteLine(" задача MyTask запущен, екземпляра класса Program");
-            //int? i = default;
+            int? i = default;
             for (int count = 0; count < 10; count++)
             {
                 Thread.Sleep(1000);
-                 //i = Task.CurrentId;
-                Console.WriteLine("В методе MyTask() екземпляра класса Program, подсчет равен " + count /*+ " задача" + i*/);
+                i = Task.CurrentId;
+                Console.WriteLine("В методе MyTask() екземпляра класса Program, подсчет равен " + count + " задача: " + i);
                 //Console.WriteLine(i);
                
             }
@@ -32,12 +32,12 @@ namespace Console_delegate
         static void MyTask()
         {
             Console.WriteLine(" задача MyTask запущен");
-            //int? i = default;
+            int? i = default;
             for (int count = 0; count < 10; count++)
             {
-                Thread.Sleep(1000);  
-                //i = Task.CurrentId; 
-                Console.WriteLine("В методе MyTask(), подсчет равен " + count /*+ " задача" + i*/);
+                Thread.Sleep(1000);
+                i = Task.CurrentId;
+                Console.WriteLine("В методе MyTask(), подсчет равен " + count + " задача: " + i);
             }
             Console.WriteLine("задача MyTask завершен");
         }
