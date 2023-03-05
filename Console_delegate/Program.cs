@@ -68,7 +68,8 @@ namespace Console_delegate
 
             //ожидание выполнение задачи task, чтобы она успела выполниться
             //перед закрытием после выполнения программы в методе Main
-            //task.Wait();
+            task.Wait();
+            task2.Wait();
             //Task[] tasks = {task,task2 };
             //Task [] task1 = new Task[2] {task,task2 };
             //или список задач
@@ -84,7 +85,7 @@ namespace Console_delegate
             {
                 //метод Thread. Sleep() использован для сохранения активным основного потока 
                 //до тех пор, пока не завершится выполнение метода MyTask() и метода MyTask2
-                Thread.Sleep(1000);
+                //Thread.Sleep(1000);
                 Console.WriteLine($"Код в основном потоке: {i}");
             }
             Console.WriteLine("Основной поток завершен");
