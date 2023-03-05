@@ -68,12 +68,13 @@ namespace Console_delegate
 
             //ожидание выполнение задачи task, чтобы она успела выполниться
             //перед закрытием после выполнения программы в методе Main
-            task.Wait();
-            task2.Wait();
+            //task.Wait();
+            //task2.Wait();
+
             //Task[] tasks = {task,task2 };
             //Task [] task1 = new Task[2] {task,task2 };
             //или список задач
-            //Task.WaitAll(task2,task);
+            Task.WaitAll(task2, task);
             // или массив тасков 
             //Task.WaitAll(task1);
 
