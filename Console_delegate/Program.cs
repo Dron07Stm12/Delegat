@@ -33,7 +33,7 @@ namespace Console_delegate
         {
             Console.WriteLine(" задача MyTask запущен");
             int? i = default;
-            for (int count = 0; count < 10; count++)
+            for (int count = 0; count < 2; count++)
             {
                 Thread.Sleep(1000);
                 i = Task.CurrentId;
@@ -74,12 +74,12 @@ namespace Console_delegate
             //Task[] tasks = {task,task2 };
             //Task [] task1 = new Task[2] {task,task2 };
             //или список задач
-            Task.WaitAll(task2, task);
+            //Task.WaitAll(task2, task);
             // или массив тасков 
             //Task.WaitAll(task1);
 
             //выход после выполнения одной из задачи
-            //Task.WaitAny(task2,task);    
+            Task.WaitAny(task2, task);
 
             //выполнение каких-либо действий в методе Main(основной поток)
             for (int i = 0; i < 10; i++)
