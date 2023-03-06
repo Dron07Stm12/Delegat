@@ -14,100 +14,60 @@ namespace Console_delegate
     internal class Program
     {
 
+        static bool MyTask() { return true; }
 
-        public void MyTask2() {
-            Console.WriteLine(" задача MyTask запущен, екземпляра класса Program");
-            int? i = default;
-            for (int count = 0; count < 10; count++)
+        static int SumIt(object v) {
+
+            int x = (int)v;
+            int sum = 0;
+            for (; x > 0; x--)
             {
-                Thread.Sleep(1000);
-                i = Task.CurrentId;
-                Console.WriteLine("В методе MyTask() екземпляра класса Program, подсчет равен " + count + " задача: " + i);
-                //Console.WriteLine(i);
-               
+                sum += x;
             }
-            Console.WriteLine("задача MyTask завершен, екземпляра класса Program");
-
+           return sum;  
+        
         }
-
-        static void MyTask()
-        {
-            Console.WriteLine(" задача MyTask запущена");
-           
-            for (int count = 0; count < 5; count++)
-            {
-                Thread.Sleep(1000);
-                
-                Console.WriteLine("В методе MyTask(), подсчет равен " + count + " задача: " + Task.CurrentId );
-            }
-            Console.WriteLine("задача MyTask завершена");
-        }
-
-        static void ContMyTask(Task task) 
-        {
-            Console.WriteLine("Продолжение задачи MyTask в задаче  ContMyTask");
-            for (int count = 5; count < 10; count++)
-            {
-                Thread.Sleep(1000);
-
-                Console.WriteLine("В методе ContMyTask(), подсчет равен " + count + " задача: " + Task.CurrentId);
-            }
-            Console.WriteLine("задача ContMyTask завершена");
-
-        }
-
           //Main основной поток
         static void Main(string[] args)
         {
-            // методы MyTask(), MyTask2() и Main() выполняются параллельно. 
-            Console.WriteLine("Основной поток запущен через точку входа Main");
 
-            //Сконструируем обьект первой задачи
-            Task task = new Task(MyTask);
+            Console.WriteLine("Основной поток запущен");
 
-            //Создать продолжение задачи
-            Task taskCont = task.ContinueWith(ContMyTask);
-            Task task1 = taskCont.ContinueWith((first) => {
+            //public Task(Func<TResult> function);
+            // Сконструировать объект первой задачи. 
+            Task<bool> tsk = Task<bool>.Factory.StartNew(MyTask);
+            Console.WriteLine(tsk.Result);
 
-                Console.WriteLine("Продолжение задачи ContMyTask в задаче  first");
-                for (int count = 10; count < 15; count++)
+            //public Task(Func<object?, TResult> function, object? state);
+            // Сконструировать объект второй  задачи.
+            Task<int> tsk2 = Task<int>.Factory.StartNew(SumIt,3);
+            Console.WriteLine(tsk2.Result);
+
+            Func<object, int> func = delegate (object o) {
+              
+                int x = (int)o;
+                int sum = default;    
+                for (; x > 0; --x )
                 {
-                    Thread.Sleep(1000);
-
-                    Console.WriteLine("В методе first, подсчет равен " + count + " задача: " + Task.CurrentId);
+                   sum+= x; 
                 }
-                Console.WriteLine("задача first завершена");
+                return sum; 
+            };
 
-            });
-
-            Task task2 = task1.ContinueWith(delegate {
-
-                Console.WriteLine("Продолжение задачи  first в задаче  анонимной функции");
-                for (int count = 15; count < 20; count++)
-                {
-                    Thread.Sleep(1000);
-
-                    Console.WriteLine("В анонимной функции, подсчет равен " + count + " задача: " + Task.CurrentId);
-                }
-                Console.WriteLine("задача анонимной функции завершена");
+            //public Task(Func<object?, TResult> function, object? state);
+            // Сконструировать объект третьей  задачи, который возвращает обьект int(TResult),
+            //а в самом делегате Func - принемает обьект(object?). Сдесь вместо метода безымянный 
+            // блок кода func
+            Task<int> tsk3 = Task<int>.Factory.StartNew(func,4);
+            Console.WriteLine(tsk3.Result);
 
 
-            });
+            tsk.Dispose();
+            tsk2.Dispose();
+            tsk3.Dispose();
 
-            // Начать последовательность задач, 
-            task.Start();
-
-            // Ожидать завершения продолжения. 
-          
-            task2.Wait();
-
-            task.Dispose();          
-            taskCont.Dispose();
-            task1.Dispose();
-            task2.Dispose();    
-          
             Console.WriteLine("Основной поток завершен");
-            
+
         }
     }
 }
