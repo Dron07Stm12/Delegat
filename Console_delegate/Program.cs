@@ -62,42 +62,49 @@ namespace Console_delegate
             // методы MyTask(), MyTask2() и Main() выполняются параллельно. 
             Console.WriteLine("Основной поток запущен через точку входа Main");
 
+            //Сконструируем обьект первой задачи
+            Task task = new Task(MyTask);
 
-            Action<Task, object> action = delegate (Task task1,object u)
-            {
-                Console.WriteLine("Продолжение задачи MyTask в задаче action");
-                for (int count = 5; count < 10; count++)
+            //Создать продолжение задачи
+            Task taskCont = task.ContinueWith(ContMyTask);
+            Task task1 = taskCont.ContinueWith((first) => {
+
+                Console.WriteLine("Продолжение задачи ContMyTask в задаче  first");
+                for (int count = 10; count < 15; count++)
                 {
                     Thread.Sleep(1000);
 
-                    Console.WriteLine("В методе ContMyTask(), подсчет равен " + (count + (int)u) + " задача: " + Task.CurrentId);
+                    Console.WriteLine("В методе first, подсчет равен " + count + " задача: " + Task.CurrentId);
                 }
-                Console.WriteLine("задача action завершена");
-              
-            };
+                Console.WriteLine("задача first завершена");
+
+            });
+
+            Task task2 = task1.ContinueWith(delegate {
+
+                Console.WriteLine("Продолжение задачи  first в задаче  анонимной функции");
+                for (int count = 15; count < 20; count++)
+                {
+                    Thread.Sleep(1000);
+
+                    Console.WriteLine("В анонимной функции, подсчет равен " + count + " задача: " + Task.CurrentId);
+                }
+                Console.WriteLine("задача анонимной функции завершена");
 
 
-            //Сконструируем обьект первой задачи
-            Task task = new Task(MyTask);
-            object p = 6;
-            //Создадим продолжение задачи task
-            // вторая задача(taskCont) не начинается до тех 
-            //пор, пока не завершится первая. 
-            Task taskCont = task.ContinueWith(action, p);
-            //Создадим продолжение задачи taskCont
-            // третья задача(taskCont2) не начинается до тех 
-            //пор, пока не завершится вторая. 
-            Task taskCont2 = taskCont.ContinueWith(ContMyTask);
+            });
+
             // Начать последовательность задач, 
             task.Start();
 
             // Ожидать завершения продолжения. 
-            //taskCont.Wait();
-            taskCont2.Wait();
+          
+            task2.Wait();
 
-            task.Dispose(); 
-            taskCont.Dispose(); 
-            taskCont2.Dispose();
+            task.Dispose();          
+            taskCont.Dispose();
+            task1.Dispose();
+            task2.Dispose();    
           
             Console.WriteLine("Основной поток завершен");
             
