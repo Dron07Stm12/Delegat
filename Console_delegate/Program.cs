@@ -14,6 +14,7 @@ namespace Console_delegate
     internal class Program
     {
 
+
         public void MyTask2() {
             Console.WriteLine(" задача MyTask запущен, екземпляра класса Program");
             int? i = default;
@@ -31,15 +32,28 @@ namespace Console_delegate
 
         static void MyTask()
         {
-            Console.WriteLine(" задача MyTask запущен");
-            int? i = default;
-            for (int count = 0; count < 10; count++)
+            Console.WriteLine(" задача MyTask запущена");
+           
+            for (int count = 0; count < 5; count++)
             {
                 Thread.Sleep(1000);
-                i = Task.CurrentId;
-                Console.WriteLine("В методе MyTask(), подсчет равен " + count + " задача: " + i);
+                
+                Console.WriteLine("В методе MyTask(), подсчет равен " + count + " задача: " + Task.CurrentId );
             }
-            Console.WriteLine("задача MyTask завершен");
+            Console.WriteLine("задача MyTask завершена");
+        }
+
+        static void ContMyTask(Task task) 
+        {
+            Console.WriteLine("Продолжение задачи MyTask в задаче  ContMyTask");
+            for (int count = 5; count < 10; count++)
+            {
+                Thread.Sleep(1000);
+
+                Console.WriteLine("В методе ContMyTask(), подсчет равен " + count + " задача: " + Task.CurrentId);
+            }
+            Console.WriteLine("задача ContMyTask завершена");
+
         }
 
           //Main основной поток
@@ -48,33 +62,42 @@ namespace Console_delegate
             // методы MyTask(), MyTask2() и Main() выполняются параллельно. 
             Console.WriteLine("Основной поток запущен через точку входа Main");
 
-            Task task = Task.Factory.StartNew(delegate () {
-                Console.WriteLine("Задача номер: " + Task.CurrentId + " запущена");
-                for (int i = 0; i < 5; i++)
+
+            Action<Task, object> action = delegate (Task task1,object u)
+            {
+                Console.WriteLine("Продолжение задачи MyTask в задаче action");
+                for (int count = 5; count < 10; count++)
                 {
                     Thread.Sleep(1000);
-                    Console.WriteLine( " сосчитала число: " + i);
+
+                    Console.WriteLine("В методе ContMyTask(), подсчет равен " + (count + (int)u) + " задача: " + Task.CurrentId);
                 }
-                Console.WriteLine("Задача номер: " + Task.CurrentId + " завершена");
-            });
+                Console.WriteLine("задача action завершена");
+              
+            };
 
-            task.Wait();    
-            task.Dispose();
 
-            Task task2 = Task.Factory.StartNew(() => {
+            //Сконструируем обьект первой задачи
+            Task task = new Task(MyTask);
+            object p = 6;
+            //Создадим продолжение задачи task
+            // вторая задача(taskCont) не начинается до тех 
+            //пор, пока не завершится первая. 
+            Task taskCont = task.ContinueWith(action, p);
+            //Создадим продолжение задачи taskCont
+            // третья задача(taskCont2) не начинается до тех 
+            //пор, пока не завершится вторая. 
+            Task taskCont2 = taskCont.ContinueWith(ContMyTask);
+            // Начать последовательность задач, 
+            task.Start();
 
-                Console.WriteLine("Задача номер: " + Task.CurrentId + " запущена");
-                for (int i = 0; i < 7; i++)
-                {
-                    Thread.Sleep(1000);
-                    Console.WriteLine(" сосчитала число: " + i);
-                }
-                Console.WriteLine("Задача номер: " + Task.CurrentId + " завершена");
+            // Ожидать завершения продолжения. 
+            //taskCont.Wait();
+            taskCont2.Wait();
 
-            });
-
-            task2.Wait();
-            task2.Dispose();    
+            task.Dispose(); 
+            taskCont.Dispose(); 
+            taskCont2.Dispose();
           
             Console.WriteLine("Основной поток завершен");
             
