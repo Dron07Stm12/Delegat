@@ -33,7 +33,7 @@ namespace Console_delegate
         {
             Console.WriteLine(" задача MyTask запущен");
             int? i = default;
-            for (int count = 0; count < 2; count++)
+            for (int count = 0; count < 10; count++)
             {
                 Thread.Sleep(1000);
                 i = Task.CurrentId;
@@ -48,49 +48,34 @@ namespace Console_delegate
             // методы MyTask(), MyTask2() и Main() выполняются параллельно. 
             Console.WriteLine("Основной поток запущен через точку входа Main");
 
-            //Создаем экземпляр класса Program
-            Program program = new Program();
+            Task task = Task.Factory.StartNew(delegate () {
+                Console.WriteLine("Задача номер: " + Task.CurrentId + " запущена");
+                for (int i = 0; i < 5; i++)
+                {
+                    Thread.Sleep(1000);
+                    Console.WriteLine( " сосчитала число: " + i);
+                }
+                Console.WriteLine("Задача номер: " + Task.CurrentId + " завершена");
+            });
 
-            //Создаем задачу экземпляра класса Program
-            Task task2 = new Task(program.MyTask2);
-
-            //Создаем задачу(MyTask) через конструктор класса Task,
-            //т.к. конструктор принемает делегат Action соответствующий сигнатуре метода MyTask
-            Task task = new Task(Program.MyTask);
-
-            Console.WriteLine("Идентификатор задачи task: " + task.Id);
-            Console.WriteLine("Идентификатор задачи task2: " + task2.Id);
-
-
-            //запускаем задачи
-            task.Start();
-            task2.Start();
-
-            //ожидание выполнение задачи task, чтобы она успела выполниться
-            //перед закрытием после выполнения программы в методе Main
-            //task.Wait();
-            //task2.Wait();
-
-            //Task[] tasks = {task,task2 };
-            //Task [] task1 = new Task[2] {task,task2 };
-            //или список задач
-            //Task.WaitAll(task2, task);
-            // или массив тасков 
-            //Task.WaitAll(task1);
-
-            //выход после выполнения одной из задачи
-            Task.WaitAny(task2, task);
+            task.Wait();    
             task.Dispose();
-            //выполнение каких-либо действий в методе Main(основной поток)
-            for (int i = 0; i < 10; i++)
-            {
-                //метод Thread. Sleep() использован для сохранения активным основного потока 
-                //до тех пор, пока не завершится выполнение метода MyTask() и метода MyTask2
-                //Thread.Sleep(1000);
-                task2.Wait();
-                
-                Console.WriteLine($"Код в основном потоке: {i}");
-            }
+
+            Task task2 = Task.Factory.StartNew(() => {
+
+                Console.WriteLine("Задача номер: " + Task.CurrentId + " запущена");
+                for (int i = 0; i < 7; i++)
+                {
+                    Thread.Sleep(1000);
+                    Console.WriteLine(" сосчитала число: " + i);
+                }
+                Console.WriteLine("Задача номер: " + Task.CurrentId + " завершена");
+
+            });
+
+            task2.Wait();
+            task2.Dispose();    
+          
             Console.WriteLine("Основной поток завершен");
             
         }
