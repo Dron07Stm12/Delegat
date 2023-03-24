@@ -14,57 +14,76 @@ namespace Console_delegate
     internal class Program
     {
 
-        static bool MyTask() { return true; }
 
-        static int SumIt(object v) {
+        static void MyTask(object ct)
+        {
 
-            int x = (int)v;
-            int sum = 0;
-            for (; x > 0; x--)
+            //создание признака отмены и явное приведение его к типу object
+            CancellationToken token = (CancellationToken)ct;
+
+            // Проверить, отменена ли задача, прежде чем запускать ее. 
+            token.ThrowIfCancellationRequested();
+
+            Console.WriteLine("MyTask запущен");
+
+            for (int i = 0; i < 10; i++)
             {
-                sum += x;
+                // В данном примере для отслеживания отмены задачи применяется опрос, 
+                if (token.IsCancellationRequested)
+                {
+                    Console.WriteLine("Получен запрос на отмену задачи");
+                    token.ThrowIfCancellationRequested();
+                }
+                Thread.Sleep(500);
+                Console.WriteLine("В методе MyTask подсчет равен:" + i);
+
             }
-           return sum;  
-        
+
+            Console.WriteLine("MyTask завершен");
         }
-          //Main основной поток
+
+        //Main основной поток
         static void Main(string[] args)
         {
 
             Console.WriteLine("Основной поток запущен");
 
-            //public Task(Func<TResult> function);
-            // Сконструировать объект первой задачи. 
-            Task<bool> tsk = Task<bool>.Factory.StartNew(MyTask);
-            Console.WriteLine(tsk.Result);
+            // Создать объект источника признаков отмены. 
+            CancellationTokenSource source = new CancellationTokenSource();
+            // Запустить задачу, передав признак отмены ей самой и делегату. 
+            Task task = Task.Factory.StartNew(MyTask, source.Token, source.Token);
 
-            //public Task(Func<object?, TResult> function, object? state);
-            // Сконструировать объект второй  задачи.
-            Task<int> tsk2 = Task<int>.Factory.StartNew(SumIt,3);
-            Console.WriteLine(tsk2.Result);
+            Thread.Sleep(1000);
 
-            Func<object, int> func = delegate (object o) {
-              
-                int x = (int)o;
-                int sum = default;    
-                for (; x > 0; --x )
+            try
+            {
+                // Отменить задачу. 
+                source.Cancel();
+
+                // Приостановить выполнение метода Main() до тех пор, 
+                // пока не завершится задача task.
+                task.Wait();
+
+
+            }
+            catch (AggregateException exe)
+            {
+                if (task.IsCanceled)
                 {
-                   sum+= x; 
+                    Console.WriteLine("\nЗадача tsk отменена\n");
+                    //Для просмотра исключения снять комментарии со следующей строки кода: 
+                    Console.WriteLine(exe);
+
+
                 }
-                return sum; 
-            };
 
-            //public Task(Func<object?, TResult> function, object? state);
-            // Сконструировать объект третьей  задачи, который возвращает обьект int(TResult),
-            //а в самом делегате Func - принемает обьект(object?). Сдесь вместо метода безымянный 
-            // блок кода func
-            Task<int> tsk3 = Task<int>.Factory.StartNew(func,4);
-            Console.WriteLine(tsk3.Result);
+            }
+            finally
+            {
 
-
-            tsk.Dispose();
-            tsk2.Dispose();
-            tsk3.Dispose();
+                task.Dispose();
+                source.Cancel();
+            }
 
             Console.WriteLine("Основной поток завершен");
 
